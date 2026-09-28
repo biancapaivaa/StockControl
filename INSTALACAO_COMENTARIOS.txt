@@ -1,0 +1,314 @@
+# 🚀 INSTRUÇÕES DE INSTALAÇÃO - SISTEMA DE COMENTÁRIOS
+
+## ✅ Pré-requisitos
+
+- [x] PHP 7.4 ou superior
+- [x] MySQL 5.7 ou superior
+- [x] XAMPP/WAMP/LAMP instalado e funcionando
+- [x] Sistema existente com autenticação (`auth.php`, `conexao.php`)
+
+## 📥 Instalação Passo a Passo
+
+### PASSO 1: Atualizar Banco de Dados
+
+#### Opção A: Usando PHPMyAdmin
+
+1. Abra PHPMyAdmin em `http://localhost/phpmyadmin`
+2. Selecione o banco `empresa_acessorios`
+3. Clique em "SQL"
+4. Copie e cole o seguinte código:
+
+```sql
+CREATE TABLE IF NOT EXISTS comentarios (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT UNSIGNED NOT NULL,
+    nome VARCHAR(120) NOT NULL,
+    email VARCHAR(180) NOT NULL,
+    comentario TEXT NOT NULL,
+    avaliacao INT DEFAULT 0,
+    status ENUM('Pendente','Aprovado','Rejeitado') NOT NULL DEFAULT 'Pendente',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comentarios_produtos
+        FOREIGN KEY (produto_id) REFERENCES produtos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
+```
+
+5. Clique em "Executar"
+
+#### Opção B: Usando Arquivo SQL
+
+1. Abra o arquivo `database.sql`
+2. Execute no seu MySQL client
+3. A tabela será criada automaticamente
+
+### PASSO 2: Verificar Estrutura de Diretórios
+
+Certifique-se de que você tem:
+
+```
+empresa-acessorios/
+├── assets/
+│   ├── css/
+│   │   └── style.css       ✅ Novo
+│   ├── js/
+│   │   └── script.js       ✅ Novo
+│   └── logo.png
+├── comentarios.php         ✅ Novo
+├── form_comentario.php     ✅ Novo
+├── salvar_comentario.php   ✅ Novo
+├── aprovar_comentario.php  ✅ Novo
+├── rejeitar_comentario.php ✅ Novo
+├── excluir_comentario.php  ✅ Novo
+├── produtos.php            ✅ Modificado
+└── ... (outros arquivos)
+```
+
+Se faltarem pastas, crie:
+- Pasta: `assets/css/`
+- Pasta: `assets/js/`
+
+### PASSO 3: Testar Funcionamento
+
+#### Teste 1: Verificar Tabela no Banco
+
+1. Abra PHPMyAdmin
+2. Selecione banco `empresa_acessorios`
+3. Procure por tabela `comentarios`
+4. Verifique se tem as colunas:
+   - id
+   - produto_id
+   - nome
+   - email
+   - comentario
+   - avaliacao
+   - status
+   - criado_em
+
+#### Teste 2: Acessar Formulário de Comentários
+
+1. Abra: `http://localhost/empresa-acessorios/form_comentario.php?produto_id=1`
+2. Verifique se:
+   - [x] Página carrega sem erros
+   - [x] Dados do produto aparecem
+   - [x] Formulário é exibido
+   - [x] Sistema de estrelas funciona
+
+#### Teste 3: Deixar um Comentário
+
+1. Preencha o formulário:
+   - Nome: "João Silva"
+   - Email: "joao@email.com"
+   - Avaliação: 5 estrelas
+   - Comentário: "Produto excelente!"
+
+2. Clique em "Enviar Comentário"
+3. Verifique mensagem de sucesso
+
+#### Teste 4: Acessar Painel Admin
+
+1. Faça login no painel (`login.php`)
+2. Abra: `http://localhost/empresa-acessorios/comentarios.php`
+3. Verifique se:
+   - [x] Página carrega sem erros
+   - [x] Seu comentário aparece com status "Pendente"
+   - [x] Filtros funcionam
+
+#### Teste 5: Moderar Comentário
+
+1. No painel de comentários, clique "Aprovar"
+2. Verifique se status mudou para "Aprovado"
+3. Volte ao formulário do produto
+4. Verifique se comentário agora aparece
+
+#### Teste 6: Rejeitar Comentário
+
+1. Deixe outro comentário
+2. No painel, clique "Rejeitar"
+3. Status deve mudar para "Rejeitado"
+
+#### Teste 7: Excluir Comentário
+
+1. Clique "Excluir"
+2. Confirme na popup
+3. Comentário deve desaparecer
+
+#### Teste 8: Verificar Integração com Produtos
+
+1. Abra: `http://localhost/empresa-acessorios/produtos.php`
+2. Verifique se:
+   - [x] Coluna "Comentários" aparece
+   - [x] Total de comentários está correto
+   - [x] Badge com pendentes aparece (se houver)
+   - [x] Link "Comentários" funciona
+
+## 🔧 Configurações Opcionais
+
+### Personalizar Cores
+
+Edite `assets/css/style.css` e altere as cores em `:root {}`:
+
+```css
+:root {
+    --primary: #007bff;      /* Azul */
+    --secondary: #6c757d;    /* Cinza */
+    --success: #28a745;      /* Verde */
+    --danger: #dc3545;       /* Vermelho */
+    --warning: #ffc107;      /* Amarelo */
+}
+```
+
+### Personalizar Textos
+
+Edite os arquivos PHP e altere as strings:
+
+**Em `form_comentario.php`:**
+```php
+<h3>Deixe seu comentário</h3>  // Mudar aqui
+```
+
+**Em `comentarios.php`:**
+```php
+<h1>Comentários dos Produtos</h1>  // Mudar aqui
+```
+
+### Adicionar Captcha
+
+Para evitar spam, você pode adicionar Google reCAPTCHA:
+
+1. Registre em: https://www.google.com/recaptcha/admin
+2. Adicione o script no formulário
+3. Valide no servidor
+
+## 🐛 Troubleshooting
+
+### Erro: "Tabela comentarios não existe"
+
+**Solução:**
+1. Execute novamente o SQL de criação
+2. Verifique se o banco está correto
+3. Confirme que as permissões estão ok
+
+### Erro: "Erro ao salvar comentário"
+
+**Solução:**
+1. Verifique logs do PHP
+2. Confirme conexão com banco
+3. Teste if produto_id é válido
+
+### Comentários não aparecem
+
+**Solução:**
+1. Verifique se status é "Aprovado"
+2. Confirme que produto existe
+3. Limpe cache do navegador (Ctrl+Shift+Del)
+
+### Página em branco
+
+**Solução:**
+1. Ative modo debug: adicione `error_reporting(E_ALL);` no topo do PHP
+2. Verifique logs de erro do servidor
+3. Confirme sintaxe PHP
+
+### Arquivo 404 Not Found
+
+**Solução:**
+1. Verifique nome exato do arquivo
+2. Confirme localização correta
+3. Verifique permissões de arquivo (644)
+
+### Erro de permissão de banco
+
+**Solução:**
+1. Verifique credenciais em `conexao.php`
+2. Confirme usuário MySQL tem privilégios
+3. Execute: `GRANT ALL ON empresa_acessorios.* TO 'root'@'localhost';`
+
+## 📊 Backup do Banco
+
+Antes de instalar, faça um backup:
+
+### PHPMyAdmin
+1. Selecione banco `empresa_acessorios`
+2. Clique "Exportar"
+3. Salve o arquivo .sql
+
+### Linha de comando
+```bash
+mysqldump -u root -p empresa_acessorios > backup.sql
+```
+
+## ✅ Checklist Final de Instalação
+
+- [ ] Tabela criada no banco de dados
+- [ ] Pastas `/assets/css/` e `/assets/js/` criadas
+- [ ] Arquivo `style.css` no lugar certo
+- [ ] Arquivo `script.js` no lugar certo
+- [ ] 6 arquivos PHP novos adicionados
+- [ ] Arquivo `produtos.php` modificado
+- [ ] Database atualizado
+- [ ] Testou criar comentário
+- [ ] Testou aprovar comentário
+- [ ] Testou rejeitar comentário
+- [ ] Testou excluir comentário
+- [ ] Integração com produtos.php funcionando
+- [ ] Responsividade verificada (mobile, tablet, desktop)
+
+## 🎉 Sistema Instalado com Sucesso!
+
+Agora você pode:
+
+1. ✅ Deixar comentários em produtos
+2. ✅ Avaliar produtos com estrelas
+3. ✅ Moderar comentários no painel
+4. ✅ Aprovar/rejeitar comentários
+5. ✅ Ver estatísticas de comentários
+
+## 📞 Suporte e Dúvidas
+
+### Documentação Disponível:
+- `COMENTARIOS.md` - Documentação técnica completa
+- `GUIA_RAPIDO_COMENTARIOS.txt` - Guia de uso rápido
+- `ARQUITETURA_COMENTARIOS.txt` - Arquitetura do sistema
+- `IMPLEMENTACAO_COMENTARIOS.txt` - Resumo de tarefas
+
+### Contato:
+Se encontrar problemas, consulte:
+1. Primeiro: `GUIA_RAPIDO_COMENTARIOS.txt`
+2. Depois: Seção Troubleshooting acima
+3. Finalmente: Verifique logs do PHP/MySQL
+
+---
+
+## 🚀 Próximas Funcionalidades Opcionais
+
+Após a instalação, você pode adicionar:
+
+1. **Resposta do Admin**
+   - Admin responde comentários
+   - Visitante vê resposta
+
+2. **Notificação por Email**
+   - Admin recebe email com novo comentário
+   - Visitante recebe email de aprovação
+
+3. **Dashboard**
+   - Gráfico de comentários
+   - Média de avaliações
+   - Top produtos
+
+4. **Paginação**
+   - Comentários em páginas
+   - Melhor performance
+
+5. **Sistema Anti-Spam**
+   - Verificar IP duplicado
+   - Ratelimit por email
+   - Validação CAPTCHA
+
+---
+
+**Instalação Concluída! 🎊**
+
+Você agora tem um sistema completo de comentários funcionando!

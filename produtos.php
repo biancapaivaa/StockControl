@@ -7,7 +7,9 @@ $categoria = trim($_GET['categoria'] ?? '');
 $status = trim($_GET['status'] ?? '');
 
 $sql = "SELECT p.*,
-        (SELECT imagem FROM produto_imagens pi WHERE pi.produto_id = p.id ORDER BY pi.id ASC LIMIT 1) AS imagem_extra
+        (SELECT imagem FROM produto_imagens pi WHERE pi.produto_id = p.id ORDER BY pi.id ASC LIMIT 1) AS imagem_extra,
+        (SELECT COUNT(*) FROM comentarios c WHERE c.produto_id = p.id) AS total_comentarios,
+        (SELECT COUNT(*) FROM comentarios c WHERE c.produto_id = p.id AND c.status = 'Pendente') AS comentarios_pendentes
         FROM produtos p WHERE 1=1";
 $params = [];
 
@@ -50,7 +52,7 @@ $erro = $_GET['erro'] ?? '';
         <a href="produtos.php" class="brand brand-dark">
             <div class="brand-logo"><img src="assets/logo.png" alt="Logo da empresa"></div>
             <div>
-                <strong>stockcontrol</strong>
+                <strong>StockControl</strong>
                 <span>Painel administrativo</span>
             </div>
         </a>
@@ -71,7 +73,10 @@ $erro = $_GET['erro'] ?? '';
             <h1>Produtos</h1>
             <p>Cadastre, edite e organize os produtos da empresa.</p>
         </div>
-        <a href="novo_produto.php" class="btn btn-primary">+ Adicionar Produto</a>
+        <div class="header-actions">
+            <a href="comentarios.php" class="btn btn-secondary">Comentários</a>
+            <a href="novo_produto.php" class="btn btn-primary">+ Adicionar Produto</a>
+        </div>
     </div>
 
     <?php if ($mensagem): ?><div class="alert alert-success"><?= htmlspecialchars($mensagem) ?></div><?php endif; ?>
@@ -133,6 +138,7 @@ $erro = $_GET['erro'] ?? '';
                             <th>Estoque</th>
                             <th>SKU</th>
                             <th>Status</th>
+                            <th>Comentários</th>
                             <th>Cadastro</th>
                             <th>Ações</th>
                         </tr>
@@ -165,10 +171,19 @@ $erro = $_GET['erro'] ?? '';
                             <td><?= (int)$produto['estoque'] ?></td>
                             <td><?= htmlspecialchars($produto['sku'] ?: '-') ?></td>
                             <td><span class="status <?= $produto['status'] === 'Ativo' ? 'status-active' : 'status-inactive' ?>"><?= htmlspecialchars($produto['status']) ?></span></td>
+                            <td>
+                                <a href="comentarios.php?produto_id=<?= (int)$produto['id'] ?>" class="comments-link">
+                                    <?= (int)$produto['total_comentarios'] ?> comentário(s)
+                                    <?php if ((int)$produto['comentarios_pendentes'] > 0): ?>
+                                        <span class="badge-pending"><?= (int)$produto['comentarios_pendentes'] ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </td>
                             <td><?= date('d/m/Y H:i', strtotime($produto['criado_em'])) ?></td>
                             <td>
                                 <div class="actions">
                                     <a href="editar_produto.php?id=<?= (int)$produto['id'] ?>" class="action-edit">Editar</a>
+                                    <a href="form_comentario.php?produto_id=<?= (int)$produto['id'] ?>" class="action-comments">Comentários</a>
                                     <a href="excluir_produto.php?id=<?= (int)$produto['id'] ?>" class="action-delete" data-confirm="Tem certeza que deseja excluir este produto?">Excluir</a>
                                 </div>
                             </td>

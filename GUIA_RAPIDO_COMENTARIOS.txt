@@ -1,0 +1,200 @@
+# GUIA RÁPIDO - SISTEMA DE COMENTÁRIOS
+
+## 🚀 Começar Rapidamente
+
+### Passo 1: Atualizar Banco de Dados
+1. Abra `database.sql`
+2. Execute o script no seu MySQL/PHPMyAdmin
+3. A tabela `comentarios` será criada automaticamente
+
+### Passo 2: Acessar o Sistema
+
+#### Para Deixar Comentário (Visitante)
+```
+http://seu-site.com/form_comentario.php?produto_id=1
+```
+
+#### Para Gerenciar Comentários (Admin)
+1. Faça login no painel administrativo
+2. Acesse: http://seu-site.com/comentarios.php
+3. Ou clique em "Comentários" na página de Produtos
+
+### Passo 3: Moderar Comentários
+- **Aprovar**: Clique em "Aprovar" para comentário ficar visível
+- **Rejeitar**: Clique em "Rejeitar" para esconder comentário
+- **Excluir**: Clique em "Excluir" para remover comentário
+
+## 📁 Novos Arquivos Criados
+
+```
+comentarios.php              ← Painel de gerenciamento
+form_comentario.php          ← Formulário do visitante
+salvar_comentario.php        ← Processa comentário
+aprovar_comentario.php       ← Aprova comentário
+rejeitar_comentario.php      ← Rejeita comentário
+excluir_comentario.php       ← Deleta comentário
+assets/css/style.css         ← Estilos completos
+assets/js/script.js          ← JavaScript
+COMENTARIOS.md               ← Documentação detalhada
+IMPLEMENTACAO_COMENTARIOS.txt ← Este resumo
+```
+
+## 🎨 Interface
+
+### Visitante vê:
+- Foto do produto
+- Nome do produto
+- Formulário para comentar (Nome, Email, Avaliação, Texto)
+- Seletor de estrelas (1-5 ⭐)
+- Comentários aprovados anteriores
+
+### Admin vê:
+- Lista de todos os comentários
+- Filtros por Produto e Status
+- Ações: Aprovar, Rejeitar, Excluir
+- Contagem de comentários pendentes
+
+## ✨ Funcionalidades
+
+### Validações
+- ✅ Nome obrigatório
+- ✅ E-mail obrigatório e validado
+- ✅ Comentário obrigatório
+- ✅ Avaliação de 1-5 estrelas (opcional)
+- ✅ Segurança contra SQL Injection e XSS
+
+### Status dos Comentários
+1. **Pendente** - Aguardando aprovação (amarelo)
+2. **Aprovado** - Visível para todos (verde)
+3. **Rejeitado** - Oculto mas ainda no banco (vermelho)
+
+### Filtros
+- Filtrar por Produto
+- Filtrar por Status
+- Limpar filtros
+
+## 🔐 Segurança
+
+✅ Comentários com "Pendente" não aparecem para visitantes
+✅ Apenas admin autenticado pode moderar
+✅ Proteção contra XSS com htmlspecialchars()
+✅ Proteção contra SQL Injection com Prepared Statements
+✅ Confirmação de exclusão antes de remover
+
+## 📊 Dashboard de Produtos
+
+A página de produtos agora mostra:
+- Coluna "Comentários" com total
+- Badge 🔴 com número de pendentes
+- Link para gerenciar comentários por produto
+- Botão "Comentários" para ir direto ao painel
+
+## 🎯 Casos de Uso
+
+### Cenário 1: Visitante deixa comentário
+```
+1. Vai em: form_comentario.php?produto_id=1
+2. Preenche: Nome, Email, Avaliação, Comentário
+3. Clica: "Enviar Comentário"
+4. Vê: Mensagem "Seu comentário está aguardando aprovação!"
+```
+
+### Cenário 2: Admin aprova comentário
+```
+1. Vai em: comentarios.php
+2. Vê: Lista com novo comentário (status Pendente)
+3. Clica: "Aprovar"
+4. Resultado: Comentário agora aparece no formulário do produto
+```
+
+### Cenário 3: Admin rejeita comentário
+```
+1. Vai em: comentarios.php
+2. Filtro: "Status" = "Pendente"
+3. Clica: "Rejeitar"
+4. Resultado: Comentário fica oculto (status Rejeitado)
+```
+
+## 🌐 URLs Úteis
+
+| URL | Descrição | Acesso |
+|-----|-----------|--------|
+| `form_comentario.php?produto_id=1` | Formulário | Público |
+| `comentarios.php` | Painel Admin | Autenticado |
+| `salvar_comentario.php` | Backend | POST |
+| `aprovar_comentario.php?id=1` | Backend | Autenticado |
+| `rejeitar_comentario.php?id=1` | Backend | Autenticado |
+| `excluir_comentario.php?id=1` | Backend | Autenticado |
+
+## 🎨 Cores e Styling
+
+- **Primário**: Azul (#007bff)
+- **Sucesso**: Verde (#28a745)
+- **Perigo**: Vermelho (#dc3545)
+- **Aviso**: Amarelo (#ffc107)
+- **Pendente**: Amarelo
+- **Aprovado**: Verde
+- **Rejeitado**: Vermelho
+
+## 📱 Responsividade
+
+Design adaptável para:
+- 📱 Mobile (320px+)
+- 📱 Tablet (768px+)
+- 💻 Desktop (1024px+)
+
+## 🐛 Troubleshooting
+
+### Tabela de comentários não encontrada
+**Solução**: Execute o comando SQL em `database.sql`
+
+### Comentários não aparecem
+**Solução**: Verifique se status é "Aprovado" em `comentarios.php`
+
+### Erro ao salvar comentário
+**Solução**: Verifique se:
+- Produto existe (ID válido)
+- E-mail é válido
+- Nenhum campo está vazio
+
+### Ligação "Comentários" não funciona
+**Solução**: Verifique se o arquivo `comentarios.php` está no mesmo diretório que `produtos.php`
+
+## 📞 Arquivos Principais
+
+### `form_comentario.php`
+Ponto de entrada para visitantes deixarem comentários.
+Mostra: Produto, Formulário, Comentários Aprovados
+
+### `comentarios.php`
+Painel administrativo de moderação.
+Mostra: Todos os comentários com filtros e ações
+
+### `database.sql`
+Contém a criação da tabela `comentarios`.
+
+### `assets/css/style.css`
+Estilos completos responsivos.
+
+### `assets/js/script.js`
+JavaScript com validações e interatividade.
+
+---
+
+## ✅ Checklist de Implementação
+
+- [x] Tabela criada no banco
+- [x] Formulário de comentário funcionando
+- [x] Validação de dados
+- [x] Sistema de aprovação
+- [x] Painel de gerenciamento
+- [x] Estilos responsivos
+- [x] JavaScript interativo
+- [x] Documentação completa
+- [x] Segurança implementada
+
+**Sistema Pronto para Usar! 🚀**
+
+---
+
+Para mais detalhes, consulte: `COMENTARIOS.md`

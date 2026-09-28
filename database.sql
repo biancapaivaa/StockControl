@@ -37,3 +37,17 @@ CREATE TABLE IF NOT EXISTS produto_imagens (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS comentarios (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT UNSIGNED NOT NULL,
+    nome VARCHAR(120) NOT NULL,
+    email VARCHAR(180) NOT NULL,
+    comentario TEXT NOT NULL,
+    avaliacao INT DEFAULT 0,
+    status ENUM('Pendente','Aprovado','Rejeitado') NOT NULL DEFAULT 'Pendente',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comentarios_produtos
+        FOREIGN KEY (produto_id) REFERENCES produtos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;

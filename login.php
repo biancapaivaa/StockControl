@@ -14,7 +14,7 @@ $sucesso = $_GET['sucesso'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Acessórios</title>
+    <title>Login - StockControl</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="auth-body">
@@ -23,7 +23,7 @@ $sucesso = $_GET['sucesso'] ?? '';
             <div class="brand">
                 <div class="brand-logo"><img src="assets/logo.png" alt="Logo da empresa"></div>
                 <div>
-                    <strong>Acessórios</strong>
+                    <strong>StockControl</strong>
                     <span>Painel administrativo</span>
                 </div>
             </div>

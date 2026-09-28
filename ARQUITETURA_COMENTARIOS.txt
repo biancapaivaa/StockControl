@@ -1,0 +1,357 @@
+# ARQUITETURA DO SISTEMA DE COMENTÁRIOS
+
+## 📊 Fluxo de Dados
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         SISTEMA DE COMENTÁRIOS                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                              VISITANTE (Público)                         │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  form_comentario.php?produto_id=1                                       │
+│  ├─ Exibe dados do produto                                              │
+│  ├─ Formulário: Nome, Email, Avaliação, Comentário                      │
+│  ├─ Validações interativas (JavaScript)                                 │
+│  ├─ Envia para: salvar_comentario.php (POST)                           │
+│  └─ Lista comentários aprovados anteriores                              │
+│                                                                          │
+│  Resultado: Comentário com status "Pendente"                           │
+│  Mensagem: "Aguardando aprovação"                                       │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+                        ┌──────────────────────┐
+                        │  Banco de Dados:     │
+                        │  Tabela comentarios  │
+                        │                      │
+                        │  - id                │
+                        │  - produto_id       │
+                        │  - nome              │
+                        │  - email             │
+                        │  - comentario        │
+                        │  - avaliacao         │
+                        │  - status (Pendente) │
+                        │  - criado_em         │
+                        └──────────────────────┘
+                                     │
+                                     ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        ADMINISTRADOR (Autenticado)                       │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  comentarios.php                                                         │
+│  ├─ Requer autenticação (require_once 'auth.php')                       │
+│  ├─ Lista todos os comentários                                          │
+│  ├─ Filtros:                                                            │
+│  │  ├─ Por Produto                                                      │
+│  │  └─ Por Status (Pendente, Aprovado, Rejeitado)                      │
+│  │                                                                       │
+│  ├─ Ações:                                                              │
+│  │  ├─ Aprovar      → aprovar_comentario.php?id=X                      │
+│  │  │                 (Status: Pendente → Aprovado)                     │
+│  │  ├─ Rejeitar     → rejeitar_comentario.php?id=X                     │
+│  │  │                 (Status: Pendente → Rejeitado)                    │
+│  │  └─ Excluir      → excluir_comentario.php?id=X (com confirmação)    │
+│  │                    (Deleta do banco de dados)                        │
+│  │                                                                       │
+│  └─ Contagem de comentários pendentes                                   │
+│                                                                          │
+│  Acesso também via:                                                      │
+│  └─ produtos.php (botão "Comentários" + coluna na tabela)              │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+                        ┌──────────────────────┐
+                        │ Status Atualizado:   │
+                        │ "Aprovado" ou        │
+                        │ "Rejeitado"          │
+                        └──────────────────────┘
+                                     │
+                                     ▼
+                        ┌──────────────────────┐
+                        │  Comentário Visível  │
+                        │  para Visitantes em  │
+                        │  form_comentario.php │
+                        │  (somente Aprovados) │
+                        └──────────────────────┘
+```
+
+## 📁 Estrutura de Diretórios
+
+```
+empresa-acessorios/
+│
+├── 📄 ARQUIVOS PHP - FUNCIONALIDADES DE COMENTÁRIOS
+│   ├── comentarios.php              (Painel Admin - Listagem)
+│   ├── form_comentario.php          (Formulário Visitante)
+│   ├── salvar_comentario.php        (Backend - Salvar)
+│   ├── aprovar_comentario.php       (Backend - Aprovar)
+│   ├── rejeitar_comentario.php      (Backend - Rejeitar)
+│   └── excluir_comentario.php       (Backend - Deletar)
+│
+├── 📄 ARQUIVO MODIFICADO
+│   └── produtos.php                 (Integração de comentários)
+│
+├── 📄 BANCO DE DADOS
+│   └── database.sql                 (Com tabela comentarios)
+│
+├── 📁 ASSETS (Novos)
+│   ├── css/
+│   │   └── style.css               (Estilos completos responsivos)
+│   └── js/
+│       └── script.js               (JavaScript interativo)
+│
+├── 📄 DOCUMENTAÇÃO
+│   ├── COMENTARIOS.md              (Documentação Completa)
+│   ├── IMPLEMENTACAO_COMENTARIOS.txt (Resumo de Tarefas)
+│   ├── GUIA_RAPIDO_COMENTARIOS.txt (Guia de Uso)
+│   └── ARQUITETURA.md              (Este arquivo)
+│
+└── 📁 ARQUIVOS EXISTENTES (Não modificados)
+    ├── autenticar.php
+    ├── auth.php
+    ├── cadastro.php
+    ├── conexao.php
+    ├── editar_produto.php
+    ├── excluir_imagem.php
+    ├── excluir_produto.php
+    ├── form_produto.php
+    ├── login.php
+    ├── logout.php
+    ├── novo_produto.php
+    ├── README.txt
+    ├── salvar_produto.php
+    ├── salvar_usuario.php
+    ├── uploads/
+    │   └── produtos/
+    └── assets/
+        └── logo.png
+```
+
+## 🔄 Fluxo de Estados dos Comentários
+
+```
+                              ┌─────────────────┐
+                              │   Visitante      │
+                              │ Deixa Comentário │
+                              └────────┬────────┘
+                                       │
+                                       ▼
+                            ┌────────────────────┐
+                            │    PENDENTE ⏳     │
+                            │  (Aguardando)      │
+                            └───┬────────────┬───┘
+                                │            │
+                ┌───────────────▼            ▼──────────────┐
+                │                                           │
+        ┌───────▼──────────┐                    ┌──────────▼────┐
+        │   APROVADO ✅    │                    │  REJEITADO ❌ │
+        │ (Visível)        │                    │  (Oculto)     │
+        │ (Lista do Prod)  │                    │               │
+        └───────┬──────────┘                    └──────┬────────┘
+                │                                      │
+                │  Admin clica "Excluir"  │  Admin clica "Excluir"
+                │                                      │
+                └──────────────┬───────────────────────┘
+                               │
+                        ┌──────▼──────┐
+                        │  DELETADO ❌ │
+                        │ (Removido)   │
+                        └──────────────┘
+```
+
+## 🔐 Fluxo de Segurança
+
+```
+ENTRADA
+   │
+   ▼
+┌──────────────────────────────────────┐
+│  Validação Client-Side (JavaScript)  │
+│  ├─ Nome obrigatório?                │
+│  ├─ Email válido?                    │
+│  ├─ Comentário preenchido?           │
+│  └─ Avaliação entre 0-5?             │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│   Validação Server-Side (PHP)        │
+│  ├─ Campo vazio?                     │
+│  ├─ Email filter_var?                │
+│  ├─ Comprimento válido?              │
+│  ├─ Produto existe?                  │
+│  └─ Avaliação 0-5?                   │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│   SQL Injection Prevention            │
+│  ├─ Prepared Statements (PDO)        │
+│  ├─ Placeholders (?)                 │
+│  └─ Nenhuma concatenação             │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│   XSS Prevention                     │
+│  ├─ htmlspecialchars() em outputs    │
+│  ├─ nl2br() para quebras de linha    │
+│  └─ Nenhuma tag HTML renderizada     │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────┐
+│   Autenticação (Admin)               │
+│  ├─ Requer session autenticada       │
+│  ├─ require_once 'auth.php'          │
+│  └─ Redireção se não autenticado     │
+└──────────────────┬───────────────────┘
+                   │
+                   ▼
+           ✅ SEGURO - Salvo
+```
+
+## 📋 Checklist de Funcionalidades
+
+```
+VISITANTE:
+├─ [x] Ver detalhes do produto
+├─ [x] Preencher formulário de comentário
+│   ├─ [x] Nome
+│   ├─ [x] Email
+│   ├─ [x] Avaliação (1-5 estrelas)
+│   └─ [x] Comentário
+├─ [x] Ver comentários aprovados
+├─ [x] Validação local
+└─ [x] Mensagem de sucesso
+
+ADMINISTRADOR:
+├─ [x] Acessar painel de comentários
+├─ [x] Visualizar todos os comentários
+├─ [x] Filtrar por produto
+├─ [x] Filtrar por status
+├─ [x] Aprovar comentários
+├─ [x] Rejeitar comentários
+├─ [x] Excluir comentários
+├─ [x] Ver contagem total
+├─ [x] Ver contagem pendentes
+└─ [x] Confirmação antes de deletar
+
+INTEGRAÇÃO:
+├─ [x] Coluna de comentários em produtos.php
+├─ [x] Badge de comentários pendentes
+├─ [x] Link para formulário
+├─ [x] Link para painel
+├─ [x] Botão no header
+└─ [x] Contagem por produto
+
+SEGURANÇA:
+├─ [x] SQL Injection prevention
+├─ [x] XSS prevention
+├─ [x] Autenticação admin
+├─ [x] Validação server-side
+├─ [x] Confirmação em ações destrutivas
+└─ [x] Sanitização de dados
+
+DESIGN:
+├─ [x] Responsividade desktop
+├─ [x] Responsividade tablet
+├─ [x] Responsividade mobile
+├─ [x] Interface intuitiva
+├─ [x] Sistema de cores
+├─ [x] Transições suaves
+└─ [x] Ícones e badges
+
+DOCUMENTAÇÃO:
+├─ [x] README de comentários
+├─ [x] Guia rápido
+├─ [x] Documentação detalhada
+└─ [x] Arquitetura do sistema
+```
+
+## 🔗 Fluxo de URLs e Links
+
+```
+VISITANTE:
+form_comentario.php?produto_id=1
+    ├─ (GET) Exibe formulário + comentários aprovados
+    └─ (POST para salvar_comentario.php)
+           ├─ Validações
+           ├─ Salva no DB (status Pendente)
+           └─ Redireciona com mensagem
+
+ADMINISTRADOR:
+comentarios.php
+    ├─ Listar todos os comentários
+    ├─ Filtros: produto, status
+    │
+    ├─ Link: aprovar_comentario.php?id=X
+    │   └─ UPDATE status = 'Aprovado'
+    │
+    ├─ Link: rejeitar_comentario.php?id=X
+    │   └─ UPDATE status = 'Rejeitado'
+    │
+    └─ Link: excluir_comentario.php?id=X
+        └─ DELETE comentário
+
+INTEGRAÇÃO:
+produtos.php
+    ├─ Exibe coluna "Comentários"
+    │   ├─ Total de comentários
+    │   └─ Badge com pendentes
+    │
+    ├─ Link: "Comentários" (no header)
+    │   └─ comentarios.php
+    │
+    └─ Ação: "Comentários" (por produto)
+        └─ form_comentario.php?produto_id=X
+```
+
+## 📊 Tabela de Dados
+
+```sql
+comentarios
+├── id (INT UNSIGNED AUTO_INCREMENT PRIMARY KEY)
+├── produto_id (INT UNSIGNED FK → produtos.id)
+├── nome (VARCHAR 120)
+├── email (VARCHAR 180)
+├── comentario (TEXT)
+├── avaliacao (INT 0-5)
+├── status (ENUM: 'Pendente', 'Aprovado', 'Rejeitado')
+└── criado_em (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+```
+
+## 🎯 Melhorias Futuras Sugeridas
+
+```
+Priority 1 (Alto):
+├─ [ ] Paginação de comentários
+├─ [ ] Média de avaliações por produto
+└─ [ ] Notificação por email
+
+Priority 2 (Médio):
+├─ [ ] Sistema de resposta do admin
+├─ [ ] Filtro por data
+├─ [ ] Busca por texto
+└─ [ ] Relatórios/Dashboard
+
+Priority 3 (Baixo):
+├─ [ ] Upload de fotos
+├─ [ ] Comentários de clientes autenticados
+├─ [ ] Sistema de úteis/não úteis
+└─ [ ] Integração com redes sociais
+```
+
+---
+
+**Arquitetura Completa Documentada ✅**
+
+Para informações detalhadas, consulte:
+- COMENTARIOS.md (Documentação Técnica)
+- GUIA_RAPIDO_COMENTARIOS.txt (Como Usar)

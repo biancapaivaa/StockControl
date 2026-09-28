@@ -8,7 +8,7 @@ $acao = $isEdit ? 'editar_produto.php?id=' . (int)$produto['id'] : 'salvar_produ
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($titulo) ?> - Acessórios</title>
+    <title><?= htmlspecialchars($titulo) ?> - StockControl</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,7 +16,7 @@ $acao = $isEdit ? 'editar_produto.php?id=' . (int)$produto['id'] : 'salvar_produ
     <div class="topbar-inner">
         <a href="produtos.php" class="brand brand-dark">
             <div class="brand-logo"><img src="assets/logo.png" alt="Logo da empresa"></div>
-            <div><strong>Acessórios</strong><span>Painel administrativo</span></div>
+            <div><strong>StockControl</strong><span>Painel administrativo</span></div>
         </a>
         <div class="user-area">
             <div class="user-info">
